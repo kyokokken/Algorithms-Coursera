@@ -36,4 +36,24 @@ public class QuickUnionUF {
 		System.out.println();
 		
 	}
+
+	public void setId(int[] is) {
+		id = is;
+		
+	}
+
+	public int[] getId() {
+		return id;
+	}
+	
+	public int getDepth(int i)
+	{
+		int depth = 0;
+		while (i != id[i])
+		{
+			i = id[i];
+			depth++;
+		}
+		return depth;		
+	}
 }

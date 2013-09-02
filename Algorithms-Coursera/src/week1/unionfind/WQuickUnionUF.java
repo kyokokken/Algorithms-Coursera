@@ -9,7 +9,8 @@ public class WQuickUnionUF {
 		sz = new int[n];
 		for (int i = 0; i < n; i++) {
 			id[i] = i;
-			sz[i] = 0;
+			//sz[i] = 0; // ERROR
+			sz[i] = 1;
 		}
 
 	}
