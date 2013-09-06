@@ -7,123 +7,84 @@
  */
 
 public class Percolation {
-	boolean[][] open;
-	boolean[][] full;
-	int N;
-	private WeightedQuickUnionUF weightedQuickUnionUF;
-	Interval1D interval1D;
+	private boolean[][] open;
+	private int N;
+	private WeightedQuickUnionUF openUF;
+	private WeightedQuickUnionUF percUF;
 
 	// create N-by-N grid, with all sites blocked
 	public Percolation(int N) {
 		open = new boolean[N][N];
-		full = new boolean[N][N];
-
 		this.N = N;
-		weightedQuickUnionUF = new WeightedQuickUnionUF(N * N);
-		// interval1D = new Interval1D(1, N * N);
+		openUF = new WeightedQuickUnionUF(N * N + 2);
+		percUF = new WeightedQuickUnionUF(N * N + 2);
 	}
 
 	// open site (row i, column j) if it is not already
 	public void open(int i, int j) {
+		// Exceptions
+		if (i < 1 || j < 1 || i > N || j > N)
+			throw new IndexOutOfBoundsException();
+		if (isOpen(i, j))
+			return;
+		
 		open[i - 1][j - 1] = true;
-		if (j > 1 && isOpen(i, j - 1)) // Se non siamo nel bordo
+
+		if (i == 1)
 		{
-			weightedQuickUnionUF.union(xyTo1D(i - 1, j - 1),
-					xyTo1D(i - 1, (j - 1) - 1));
+			openUF.union(0, xyTo1D(i-1, j-1));
+			percUF.union(0, xyTo1D(i-1, j-1));
 		}
-		if (j < N && isOpen(i, j + 1)) {
-			weightedQuickUnionUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i - 1, j));
-		}
-		if (i > 1 && isOpen(i - 1, j)) {
-			weightedQuickUnionUF.union(xyTo1D(i - 1, j - 1),
-					xyTo1D((i - 1) - 1, j - 1));
-		}
-		if (i < N && isOpen(i + 1, j)) {
-			weightedQuickUnionUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i, j - 1));
+		if (i == N)
+		{
+			percUF.union(xyTo1D(i-1, j-1), (N*N)+1);
 		}
 		
-		for (int ii = 0; ii < N; ii++) {
-			for (int jj = 0; jj < N; jj++) {
-				if (open[ii][jj] && !full[ii][jj]) {
-					if (ii == 0 || (ii > 0 && full[ii - 1][jj])
-							|| (ii < N - 1 && full[ii + 1][jj])
-							|| (jj > 0 && full[ii][jj - 1])
-							|| (jj < N - 1 && full[ii][jj + 1])) {
-						full[ii][jj] = true;
-					}
-				}
-			}
+		if (j > 1 && isOpen(i, j - 1)) // Se non siamo nel bordo
+		{
+			openUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i - 1, j - 2));
+			percUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i - 1, j - 2));
 		}
+		if (j < N && isOpen(i, j + 1)) {
+			openUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i - 1, j));
+			percUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i - 1, j));
+		}
+		if (i > 1 && isOpen(i - 1, j)) {
+			openUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i - 2, j - 1));
+			percUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i - 2, j - 1));
+		}
+		if (i < N && isOpen(i + 1, j)) {
+			openUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i, j - 1));
+			percUF.union(xyTo1D(i - 1, j - 1), xyTo1D(i, j - 1));
+		}
+		
+
+
 	}
 
 	private int xyTo1D(int i, int j) {
-		return ((i * N) + (j % N));
+		return ((i * N) + (j % N) + 1);
 	}
 
-	// is site (row i, column j) open)
+	// is site (row i, column j) open?
 	public boolean isOpen(int i, int j) {
+		// Exceptions
+		if (i < 1 || j < 1 || i > N || j > N)
+			throw new IndexOutOfBoundsException();
 		return open[i - 1][j - 1];
 	}
 
 	// is site (row i, column j) full?
 	public boolean isFull(int i, int j) {
-		return full[i - 1][j - 1];
+		// Exceptions
+		if (i < 1 || j < 1 || i > N || j > N)
+			throw new IndexOutOfBoundsException();
+
+		return openUF.connected(xyTo1D(i-1, j-1), 0);
 	}
 
 	// does the system percolate?
 	public boolean percolates() {
-//		for (int i = 0; i < N; i++) {
-//			for (int j = 0; j < N; j++) {
-//				if (open[i][j] && !full[i][j]) {
-//					if (i == 0 || (i > 0 && full[i - 1][j])
-//							|| (i < N - 1 && full[i + 1][j])
-//							|| (j > 0 && full[i][j - 1])
-//							|| (j < N - 1 && full[i][j + 1])) {
-//						full[i][j] = true;
-//					}
-//				}
-//			}
-//		}
-
-		for (int i = 0; i < N; i++)
-		{
-			if (full[N-1][i])
-				return true;
-		}
-//		for (int topSite = 0; topSite < N; topSite++) {
-//			for (int bottomSite = (N * N) - N; bottomSite < N * N; bottomSite++) {
-//				if (weightedQuickUnionUF.connected(topSite, bottomSite))
-//					return true;
-//			}
-//		}
-		return false;
-	}
-
-	public static void main(String args[]) {
-		int N = 20;
-		Percolation p = new Percolation(N);
-		while (!p.percolates()) {
-			int randomRow = (int) (StdRandom.uniform() * N) + 1;
-			int randomColumn = (int) (StdRandom.uniform() * N) + 1;
-			int timeout = N * N;
-			while (p.isOpen(randomRow, randomColumn) && timeout > 0) {
-				if (randomColumn >= N) {
-					randomColumn = 1;
-					if (randomRow >= N) {
-						randomRow = 1;
-					} else
-						randomRow++;
-				} else
-					randomColumn++;
-				timeout--;
-			}
-			if (timeout < 0) // all sites were open...
-			{
-				break;
-			} else {
-				p.open(randomRow, randomColumn);
-				// System.out.println(randomRow + ", " + randomColumn);
-			}
-		}
+		return percUF.connected(0, N*N+1);
 	}
 }
