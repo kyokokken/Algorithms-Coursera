@@ -17,13 +17,13 @@ import java.util.NoSuchElementException;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
-	private LinkedList<Item> items;
-	private boolean shuffled;
-//	private ArrayList<Item> items;
+//	private LinkedList<Item> items;
+//	private boolean shuffled;
+	private ArrayList<Item> items;
 
 	public RandomizedQueue() {
-		items = new LinkedList<Item>();
-//		items = new ArrayList<Item>();
+//		items = new LinkedList<Item>();
+		items = new ArrayList<Item>();
 	}
 
 	public boolean isEmpty() {
@@ -39,7 +39,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 			throw new NullPointerException();
 //		items.addLast(item);
 		items.add(item);
-		shuffled = false;
+//		shuffled = false;
 	}
 
 	public Item dequeue() {
@@ -47,16 +47,16 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 			throw new NoSuchElementException();
 		int uniform = StdRandom.uniform(items.size());
 //		int uniform = 0;
-		Item item = items.remove(uniform);
+		Item item = items.get(uniform);
+		items.set(uniform, items.get(items.size() - 1));
+		items.remove(items.size() - 1);
 //		Item item = items.remove(0);
 //		items.trimToSize();
+		if (items.size() < 2)
+		{
+			items.trimToSize();
+		}
 		return item;
-	}
-
-	private void exch(LinkedList<Item> a, int i, int r) {
-		Item temp = a.get(i);
-		a.set(i, a.get(r));
-		a.set(r, temp);
 	}
 
 	public Item sample() {
@@ -67,32 +67,42 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 	}
 
 	public Iterator<Item> iterator() {
-		return new Iterator<Item>() {
+		return new RandomizedQueueIterator<Item>();
+	}
+	
+	@SuppressWarnings("hiding")
+	private class RandomizedQueueIterator<Item> implements Iterator<Item>
+	{
+		
+		Item[] a = (Item[]) items.toArray();
+		int index = 0;
+		
+		public RandomizedQueueIterator() {
+			StdRandom.shuffle(a);
+		}
+		
+//		private int index = 0;
 
-			private int index = 0;
+		
+		@Override
+		public boolean hasNext() {
+			return index < a.length;
+		}
 
-			@Override
-			public boolean hasNext() {
-				return index < items.size();
+		@Override
+		public Item next() {
+			if (!(index < a.length))
+				throw new NoSuchElementException();
+			return a[index++];
+		}
 
-			}
-
-			@Override
-			public Item next() {
-				if (!(index < items.size()))
-					throw new NoSuchElementException();
-				index++;
-				return items.get(StdRandom.uniform(items.size()));
-			}
-
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-
-			}
-		};
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
 	}
 
+	
 	public static void main(String args[]) {
 		System.out.println("RandomizedQueue.main()");
 		testEnqueue();

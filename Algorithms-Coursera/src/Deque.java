@@ -37,42 +37,78 @@ public class Deque<Item> implements Iterable<Item> {
 
 	public int size() {
 //		return items.size();
-		return itemsFront.size() 
+		return itemsFront.size() + itemsBack.size(); 
 	}
 
 	public void addFirst(Item item) {
 		if (item == null)
 			throw new NullPointerException();
-		items.add(0, item);
+//		items.add(0, item);
+		itemsFront.add(item);
 	}
 
 	public void addLast(Item item) {
 		if (item == null)
 			throw new NullPointerException();
-		items.add(item);
+		itemsBack.add(item);
 	}
 
 	public Item removeFirst() {
-		if (items.isEmpty())
+		Item i = null;
+		if (itemsFront.isEmpty() && itemsBack.isEmpty())
 			throw new java.util.NoSuchElementException();
-		Item deletedItem = items.remove(0);
+		if (!itemsFront.isEmpty())
+		{
+			i = itemsFront.remove(itemsFront.size() - 1);
+		}
+		else if (!itemsBack.isEmpty())
+		{
+			i = itemsBack.remove(0);
+		}
+		if (itemsBack.size() + itemsFront.size() < 2)
+		{
+			itemsBack.trimToSize();
+			itemsFront.trimToSize();
+		}
+		
+		
+//		Item deletedItem = items.remove(0);
 //		if (items.size() < currentSize / 4)
 //		{
 ////			items.trimToSize();
 //		}
 	
-		return deletedItem;
+//		return deletedItem;
+		return i;
 	}
 
 	public Item removeLast() {
-		if (items.isEmpty())
-			throw new java.util.NoSuchElementException();
-		Item deletedItem = items.remove(items.size() - 1);
+//		if (items.isEmpty())
+//			throw new java.util.NoSuchElementException();
+//		Item deletedItem = items.remove(items.size() - 1);
 //		if (items.size() < currentSize / 4)
 //		{
 ////			items.trimToSize();
 //		}
-		return deletedItem;
+//		return deletedItem;
+		
+		Item i = null;
+		if (itemsFront.isEmpty() && itemsBack.isEmpty())
+			throw new java.util.NoSuchElementException();
+		if (!itemsBack.isEmpty())
+		{
+			i = itemsBack.remove(itemsBack.size() - 1);
+		}
+		else if (!itemsFront.isEmpty())
+		{
+			i = itemsFront.remove(0);
+		}
+		if (itemsBack.size() + itemsFront.size() < 2)
+		{
+			itemsBack.trimToSize();
+			itemsFront.trimToSize();
+		}
+		return i;
 	}
 
 	public Iterator<Item> iterator() {
@@ -81,15 +117,30 @@ public class Deque<Item> implements Iterable<Item> {
 			private int index = 0;
 			@Override
 			public boolean hasNext() {
-				return index < items.size();
+//				return index < items.size();
+				return index < itemsFront.size() + itemsBack.size();
 				
 			}
 
 			@Override
 			public Item next() {
-				if (!(index < items.size()))
-					throw new  NoSuchElementException();
-				return items.get(index++);
+//				if (!(index < items.size()))
+//					throw new  NoSuchElementException();
+//				return items.get(index++);
+				if (!(index < itemsFront.size() + itemsBack.size()))
+					throw new NoSuchElementException();
+				
+				Item i = null;
+				if (index < itemsBack.size())
+				{
+					i = itemsBack.get(index);
+				}
+				else
+				{
+					i = itemsFront.get(itemsFront.size() - 1 - (index - itemsBack.size()));
+				}
+				index++;
+				return i;
 			}
 
 			@Override
@@ -115,18 +166,20 @@ public class Deque<Item> implements Iterable<Item> {
 	}
 
 	private static void testIterator() {
-		Deque<Boolean> deque = new Deque<Boolean>();
+		Deque<Integer> deque = new Deque<Integer>();
 		System.out.println("Testing iterator():");
 		for (int i = 1; i < 20; i++)
 		{
-			
 			int N = (int) Math.pow(2, i);
 			System.out.print("N = " + N + " ... ");
 			Stopwatch stopWatch = new Stopwatch();
+			Iterator<Integer> it = deque.iterator();
 			for (int j = 0; j < N; j++)
-				deque.addFirst(true);
-			while (deque.iterator().hasNext())
-				deque.iterator().next();
+				deque.addFirst(j);
+			while (it.hasNext()) {
+				Integer next = it.next();
+//				System.out.println(next);
+			}
 			System.out.println(stopWatch.elapsedTime());
 		}
 
@@ -143,7 +196,7 @@ public class Deque<Item> implements Iterable<Item> {
 			System.out.print("N = " + N + " ... ");
 			Stopwatch stopWatch = new Stopwatch();
 			for (int j = 0; j < N; j++)
-				deque.addFirst(true);
+				deque.addLast(true);
 			for (int k = 0; k < N; k++)
 				deque.removeLast();
 			System.out.println(stopWatch.elapsedTime());
@@ -205,5 +258,4 @@ public class Deque<Item> implements Iterable<Item> {
 		}
 		
 	}
-
 }
