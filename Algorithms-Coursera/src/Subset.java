@@ -23,17 +23,17 @@ public class Subset {
 	public static void main(String[] args)
 	{
 		int k = Integer.parseInt(args[0]);
-		String input = StdIn.readString();
+		String[] input = StdIn.readStrings();
 		ArrayList<String> strings = new ArrayList<String>();
-		String[] split = input.split("\\s+");
-		System.out.println(split.length);
-		for (String s : split)
+//		String[] split = input.split("\\s+");
+//		System.out.println(split.length);
+		for (String s : input)
 			strings.add(s);
 		
-		for (String s : strings)
-			System.out.println(s);
+//		for (String s : strings)
+//			System.out.println(s);
 		
-		System.out.println("-");
+//		System.out.println("-");
 		while(k > 0)
 		{
 			int uniform = StdRandom.uniform(strings.size());
